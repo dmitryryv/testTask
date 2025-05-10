@@ -31,22 +31,22 @@ Feature: Create a new book
     Then the response status code should be 400
 
   Scenario: Create a book with null name
-    Given I have book details with several null name
+    Given I have book details with null name
     When I create a new book which should not be created
     Then the response status code should be 400
 
   Scenario: Create a book with null author
-    Given I have book details with several null author
+    Given I have book details with null author
     When I create a new book which should not be created
     Then the response status code should be 400
 
   Scenario: Create a book with null publication
-    Given I have book details with several null publication
+    Given I have book details with null publication
     When I create a new book which should not be created
     Then the response status code should be 400
 
   Scenario: Create a book with null category
-    Given I have book details with several null category
+    Given I have book details with null category
     When I create a new book which should not be created
     Then the response status code should be 400
 

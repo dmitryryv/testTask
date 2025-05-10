@@ -125,7 +125,7 @@ public class BookSteps {
     }
 
 
-    @Given("I have book details with several null name")
+    @Given("I have book details with null name")
     public void iHaveBookDetailsWithNullName() {
 
         bookRequest.set(BookRequest.builder()
@@ -139,7 +139,7 @@ public class BookSteps {
     }
 
 
-    @Given("I have book details with several null author")
+    @Given("I have book details with null author")
     public void iHaveBookDetailsWithNullAuthor() {
 
         bookRequest.set(BookRequest.builder()
@@ -153,7 +153,7 @@ public class BookSteps {
     }
 
 
-    @Given("I have book details with several null publication")
+    @Given("I have book details with null publication")
     public void iHaveBookDetailsWithNullPublication() {
 
         bookRequest.set(BookRequest.builder()
@@ -167,7 +167,7 @@ public class BookSteps {
     }
 
 
-    @Given("I have book details with several null category")
+    @Given("I have book details with null category")
     public void iHaveBookDetailsWithNullCategory() {
 
         bookRequest.set(BookRequest.builder()
