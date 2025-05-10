@@ -32,6 +32,7 @@ public class BookSteps {
     private final ThreadLocal<BookRequest> updateRequest = new ThreadLocal<>();
     private final ThreadLocal<List<Map<String, Object>>> allBooks = new ThreadLocal<>();
     private final ThreadLocal<BookResponse> bookResponse = new ThreadLocal<>();
+    private final ThreadLocal<BookResponse> bookBeforeRetrieve = new ThreadLocal<>();
     private final ThreadLocal<Integer> bookIdForTest = new ThreadLocal<>();
 
     @Given("I have book details:")
@@ -197,6 +198,18 @@ public class BookSteps {
         TestHooks.getBookIdForCleanUp(bookIdForTest.get());
     }
 
+    @Given("I create this book for retrieve")
+    public void iCreateThisBookForRetrieve() {
+        response.set(bookApiClient.createBook(bookRequest.get()));
+        Assert.assertEquals(response.get().getStatusCode(), 200, "Failed to create book");
+
+        bookBeforeRetrieve.set(response.get().as(BookResponse.class));
+        bookIdForTest.set(bookBeforeRetrieve.get().getId());
+        Assert.assertNotNull(bookIdForTest.get(), "Failed to get ID for the created book");
+
+        TestHooks.getBookIdForCleanUp(bookIdForTest.get());
+    }
+
     @Then("the response status code should be {int}")
     public void theResponseStatusCodeShouldBe(int expectedStatusCode) {
         Assert.assertEquals(response.get().getStatusCode(), expectedStatusCode);
@@ -285,6 +298,19 @@ public class BookSteps {
         Assert.assertEquals(bookResponse.get().getCategory(), bookRequest.get().getCategory(), "Actual category: " + bookResponse.get().getCategory() + ", but expected: " + bookRequest.get().getCategory());
         Assert.assertEquals(bookResponse.get().getPages(), bookRequest.get().getPages(), "Actual pages count: " + bookResponse.get().getPages() + ", but expected: " + bookRequest.get().getPages());
         Assert.assertEquals(bookResponse.get().getPrice(), bookRequest.get().getPrice(), "Actual price: " + bookResponse.get().getPrice() + ", but expected: " + bookRequest.get().getPrice());
+
+    }
+
+    @Then("the retrieve response should contain the book details")
+    public void theRetrieveResponseShouldContainBookDetails() {
+
+        Assert.assertNotNull(bookResponse.get().getId(), "Created book should have an ID");
+        Assert.assertEquals(bookResponse.get().getName(), bookBeforeRetrieve.get().getName(), "Actual name: " + bookResponse.get().getName() + ", but expected: " + bookBeforeRetrieve.get().getName());
+        Assert.assertEquals(bookResponse.get().getAuthor(), bookBeforeRetrieve.get().getAuthor(), "Actual author: " + bookResponse.get().getAuthor() + ", but expected: " + bookBeforeRetrieve.get().getAuthor());
+        Assert.assertEquals(bookResponse.get().getPublication(), bookBeforeRetrieve.get().getPublication(), "Actual publication: " + bookResponse.get().getPublication() + ", but expected: " + bookBeforeRetrieve.get().getPublication());
+        Assert.assertEquals(bookResponse.get().getCategory(), bookBeforeRetrieve.get().getCategory(), "Actual category: " + bookResponse.get().getCategory() + ", but expected: " + bookBeforeRetrieve.get().getCategory());
+        Assert.assertEquals(bookResponse.get().getPages(), bookBeforeRetrieve.get().getPages(), "Actual pages count: " + bookResponse.get().getPages() + ", but expected: " + bookBeforeRetrieve.get().getPages());
+        Assert.assertEquals(bookResponse.get().getPrice(), bookBeforeRetrieve.get().getPrice(), "Actual price: " + bookResponse.get().getPrice() + ", but expected: " + bookBeforeRetrieve.get().getPrice());
 
     }
 

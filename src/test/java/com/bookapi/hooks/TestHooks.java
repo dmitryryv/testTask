@@ -33,18 +33,6 @@ public class TestHooks {
         Allure.addAttachment("Scenario", "text/plain", scenario.getName());
     }
 
-/*    @Before
-    public void markFlaky(Scenario scenario) {
-
-        if (scenario.getSourceTagNames().contains("@flaky")) {
-            Allure.getLifecycle().updateTestCase(testResult -> {
-                testResult.getLabels().add(
-                        new Label().setName("flaky").setValue("true")
-                );
-            });
-        }
-    }*/
-
     @After
     public void afterScenario(Scenario scenario) {
         LOGGER.info("Finished scenario: {}, Status: {}",
