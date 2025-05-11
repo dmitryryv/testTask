@@ -13,15 +13,6 @@ Feature: Delete a book by ID
     When I delete book with non-existent id
     Then the response status code should be 404
 
-  Scenario: Delete a book with invalid ID format
-    When I delete book with invalid id format: "word"
-    Then the response status code should be 400
-
-  Scenario: Delete a book with invalid ID format
-    When I delete book with invalid id format: "!@#"
-    Then the response status code should be 400
-
-
   Scenario: Delete the same book twice
     Given I have book details with random valid data
     And I create this book
@@ -29,3 +20,12 @@ Feature: Delete a book by ID
     When I delete the created book
     Then the response status code should be 404
     And the deleted book should no longer be available
+
+  Scenario Outline: Get a book with an invalid ID format
+    When I get the created book by invalid id format "<idFormat>"
+    Then the response status code should be <statusCode>
+
+    Examples:
+      | idFormat       | statusCode |
+      | word           | 400        |
+      | !@#            | 400        |

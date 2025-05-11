@@ -11,14 +11,12 @@ Feature: Retrieve a book by ID
     When I get the created book by fake ID
     Then the response status code should be 404
 
-  Scenario: Get a book with a non-numeric ID
-    When I get the created book by invalid id format "abc"
-    Then the response status code should be 400
+  Scenario Outline: Get a book with an invalid ID format
+    When I get the created book by invalid id format "<idFormat>"
+    Then the response status code should be <statusCode>
 
-  Scenario: Get a book with a special character ID
-    When I get the created book by invalid id format "!@#"
-    Then the response status code should be 400
-
-  Scenario: Get a book using SQL injection
-    When I get the created book by invalid id format "1 OR 1=1"
-    Then the response status code should be 400
+    Examples:
+      | idFormat       | statusCode |
+      | abc            | 400        |
+      | !@#            | 400        |
+      | 1 OR 1=1       | 400        |

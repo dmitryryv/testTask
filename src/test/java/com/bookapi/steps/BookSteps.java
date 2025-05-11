@@ -53,14 +53,7 @@ public class BookSteps {
     @Given("I have book details with random valid data")
     public void iHaveBookDetailsWithRandomValidData() {
 
-        bookRequest.set(BookRequest.builder()
-                .name(faker.getBookName())
-                .author(faker.getBookAuthor())
-                .publication(faker.getBookPublication())
-                .category(faker.getBookCategory())
-                .pages(faker.getPagesNumber())
-                .price(faker.getPriceNumber())
-                .build());
+        bookRequest.set(faker.buildDefaultBookRequest());
     }
 
     @Given("I have book details with negative price")
@@ -71,8 +64,8 @@ public class BookSteps {
                 .author(faker.getBookAuthor())
                 .publication(faker.getBookPublication())
                 .category(faker.getBookCategory())
-                .pages(faker.getNegativeIntNumber())
-                .price(faker.getPriceNumber())
+                .pages(faker.getPagesNumber())
+                .price(faker.getNegativeDoubleNumber())
                 .build());
     }
 
@@ -84,8 +77,8 @@ public class BookSteps {
                 .author(faker.getBookAuthor())
                 .publication(faker.getBookPublication())
                 .category(faker.getBookCategory())
-                .pages(faker.getPagesNumber())
-                .price(faker.getNegativeDoubleNumber())
+                .pages(faker.getNegativeIntNumber())
+                .price(faker.getPriceNumber())
                 .build());
     }
 
@@ -120,7 +113,7 @@ public class BookSteps {
                 .publication(null)
                 .category(faker.getBookCategory())
                 .pages(faker.getPagesNumber())
-                .price(faker.getNegativeDoubleNumber())
+                .price(faker.getPriceNumber())
                 .build());
     }
 
@@ -134,7 +127,7 @@ public class BookSteps {
                 .publication(faker.getBookPublication())
                 .category(faker.getBookCategory())
                 .pages(faker.getPagesNumber())
-                .price(faker.getNegativeDoubleNumber())
+                .price(faker.getPriceNumber())
                 .build());
     }
 
@@ -148,7 +141,7 @@ public class BookSteps {
                 .publication(faker.getBookPublication())
                 .category(faker.getBookCategory())
                 .pages(faker.getPagesNumber())
-                .price(faker.getNegativeDoubleNumber())
+                .price(faker.getPriceNumber())
                 .build());
     }
 
@@ -162,7 +155,7 @@ public class BookSteps {
                 .publication(null)
                 .category(faker.getBookCategory())
                 .pages(faker.getPagesNumber())
-                .price(faker.getNegativeDoubleNumber())
+                .price(faker.getPriceNumber())
                 .build());
     }
 
@@ -176,7 +169,7 @@ public class BookSteps {
                 .publication(faker.getBookPublication())
                 .category(null)
                 .pages(faker.getPagesNumber())
-                .price(faker.getNegativeDoubleNumber())
+                .price(faker.getPriceNumber())
                 .build());
     }
 
@@ -258,6 +251,8 @@ public class BookSteps {
         Assert.assertNotNull(idToRetrieve, "No book ID available for retrieval");
 
         response.set(bookApiClient.getBookById(idToRetrieve));
+        bookResponse.set(response.get().as(BookResponse.class));
+
     }
 
     @When("I get the created book by fake ID")
@@ -387,28 +382,14 @@ public class BookSteps {
 
     @When("I update a book with fake id")
     public void iUpdateNonExistentBook() {
-        updateRequest.set(BookRequest.builder()
-                .name(faker.getBookName())
-                .author(faker.getBookAuthor())
-                .publication(faker.getBookPublication())
-                .category(faker.getBookCategory())
-                .pages(faker.getPagesNumber())
-                .price(faker.getPriceNumber())
-                .build());
+        updateRequest.set(faker.buildDefaultBookRequest());
 
         response.set(bookApiClient.updateBook(faker.getBigIntNumber(), updateRequest.get()));
     }
 
     @When("I update a book with invalid id format: {string}")
     public void iUpdateBookWithInvalidIdFormat(String invalidFormat) {
-        updateRequest.set(BookRequest.builder()
-                .name(faker.getBookName())
-                .author(faker.getBookAuthor())
-                .publication(faker.getBookPublication())
-                .category(faker.getBookCategory())
-                .pages(faker.getPagesNumber())
-                .price(faker.getPriceNumber())
-                .build());
+        updateRequest.set(faker.buildDefaultBookRequest());
 
         Response response1 = given()
                 .pathParam("id", invalidFormat)

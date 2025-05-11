@@ -1,5 +1,6 @@
 package com.bookapi.helpers;
 
+import com.bookapi.models.BookRequest;
 import com.github.javafaker.Faker;
 
 import java.util.Random;
@@ -49,5 +50,17 @@ public class BookDataFaker {
     public int getBigIntNumber() {
         return Math.round((random.nextInt() * 90 + 10) * 1000000);
     }
+
+    public BookRequest buildDefaultBookRequest() {
+        return BookRequest.builder()
+                .name(getBookName())
+                .author(getBookAuthor())
+                .publication(getBookPublication())
+                .category(getBookCategory())
+                .pages(getPagesNumber())
+                .price(getPriceNumber())
+                .build();
+    }
+
 }
 
