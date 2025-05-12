@@ -44,11 +44,4 @@ public class BookApiClient {
                 .pathParam("id", id)
                 .delete(BOOK_BY_ID_ENDPOINT);
     }
-
-    @Step("Delete book with ID: {id}")
-    public Response deleteBookWithInco(int id) {
-        return given()
-                .pathParam("id", id)
-                .delete(BOOK_BY_ID_ENDPOINT);
-    }
 }
