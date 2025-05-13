@@ -2,6 +2,7 @@ package com.bookapi.steps;
 
 import com.bookapi.api.BookApiClient;
 import com.bookapi.helpers.BookDataFaker;
+import com.bookapi.helpers.BookValidator;
 import com.bookapi.hooks.TestHooks;
 import com.bookapi.models.BookRequest;
 import com.bookapi.models.BookResponse;
@@ -34,6 +35,33 @@ public class BookSteps {
     private final ThreadLocal<BookResponse> bookResponse = new ThreadLocal<>();
     private final ThreadLocal<BookResponse> bookBeforeRetrieve = new ThreadLocal<>();
     private final ThreadLocal<Integer> bookIdForTest = new ThreadLocal<>();
+
+    private Response createBook() {
+        Response bookResponse = bookApiClient.createBook(bookRequest.get());
+        response.set(bookResponse);
+        return bookResponse;
+    }
+
+    private void validateBookCreation(Response response) {
+        BookValidator.validateResponseStatusCode(
+            response.getStatusCode(), 
+            200, 
+            "Book creation",
+            response.getBody().asString()
+        );
+    }
+
+    private void processBookResponse(Response response) {
+        BookResponse createdBook = response.as(BookResponse.class);
+        bookResponse.set(createdBook);
+        bookIdForTest.set(createdBook.getId());
+        
+        Assert.assertNotNull(bookIdForTest.get(), 
+            String.format("Failed to get ID for the created book. Response body: %s", 
+                response.getBody().asString()));
+                
+        TestHooks.getBookIdForCleanUp(bookIdForTest.get());
+    }
 
     @Given("I have book details:")
     public void iHaveBookDetails(DataTable dataTable) {
@@ -181,31 +209,27 @@ public class BookSteps {
 
     @Given("I create this book")
     public void iCreateThisBook() {
-        response.set(bookApiClient.createBook(bookRequest.get()));
-        Assert.assertEquals(response.get().getStatusCode(), 200, "Failed to create book");
-
-        bookResponse.set(response.get().as(BookResponse.class));
-        bookIdForTest.set(bookResponse.get().getId());
-        Assert.assertNotNull(bookIdForTest.get(), "Failed to get ID for the created book");
-
-        TestHooks.getBookIdForCleanUp(bookIdForTest.get());
+        Response response = createBook();
+        validateBookCreation(response);
+        processBookResponse(response);
     }
 
     @Given("I create this book for retrieve")
     public void iCreateThisBookForRetrieve() {
-        response.set(bookApiClient.createBook(bookRequest.get()));
-        Assert.assertEquals(response.get().getStatusCode(), 200, "Failed to create book");
-
-        bookBeforeRetrieve.set(response.get().as(BookResponse.class));
-        bookIdForTest.set(bookBeforeRetrieve.get().getId());
-        Assert.assertNotNull(bookIdForTest.get(), "Failed to get ID for the created book");
-
-        TestHooks.getBookIdForCleanUp(bookIdForTest.get());
+        Response response = createBook();
+        validateBookCreation(response);
+        processBookResponse(response);
+        bookBeforeRetrieve.set(bookResponse.get());
     }
 
     @Then("the response status code should be {int}")
     public void theResponseStatusCodeShouldBe(int expectedStatusCode) {
-        Assert.assertEquals(response.get().getStatusCode(), expectedStatusCode);
+        BookValidator.validateResponseStatusCode(
+            response.get().getStatusCode(),
+            expectedStatusCode,
+            "Operation",
+            response.get().getBody().asString()
+        );
     }
 
     @When("I request all books")
@@ -271,64 +295,44 @@ public class BookSteps {
 
     @When("I create a new book")
     public void iCreateANewBook() {
-        response.set(bookApiClient.createBook(bookRequest.get()));
-        bookResponse.set(response.get().as(BookResponse.class));
-        bookIdForTest.set(bookResponse.get().getId());
-
-        TestHooks.getBookIdForCleanUp(bookIdForTest.get());
+        Response response = createBook();
+        processBookResponse(response);
     }
 
     @When("I create a new book which should not be created")
     public void iCreateANewBookWhichShouldNotBeCreated() {
-        response.set(bookApiClient.createBook(bookRequest.get()));
+        createBook();
     }
 
     @Then("the response should contain the book details")
     public void theResponseShouldContainBookDetails() {
-
-        Assert.assertNotNull(bookResponse.get().getId(), "Created book should have an ID");
-        Assert.assertEquals(bookResponse.get().getName(), bookRequest.get().getName(), "Actual name: " + bookResponse.get().getName() + ", but expected: " + bookRequest.get().getName());
-        Assert.assertEquals(bookResponse.get().getAuthor(), bookRequest.get().getAuthor(), "Actual author: " + bookResponse.get().getAuthor() + ", but expected: " + bookRequest.get().getAuthor());
-        Assert.assertEquals(bookResponse.get().getPublication(), bookRequest.get().getPublication(), "Actual publication: " + bookResponse.get().getPublication() + ", but expected: " + bookRequest.get().getPublication());
-        Assert.assertEquals(bookResponse.get().getCategory(), bookRequest.get().getCategory(), "Actual category: " + bookResponse.get().getCategory() + ", but expected: " + bookRequest.get().getCategory());
-        Assert.assertEquals(bookResponse.get().getPages(), bookRequest.get().getPages(), "Actual pages count: " + bookResponse.get().getPages() + ", but expected: " + bookRequest.get().getPages());
-        Assert.assertEquals(bookResponse.get().getPrice(), bookRequest.get().getPrice(), "Actual price: " + bookResponse.get().getPrice() + ", but expected: " + bookRequest.get().getPrice());
-
+        BookValidator.validateBookFields(bookResponse.get(), bookRequest.get(), "Created");
     }
 
     @Then("the retrieve response should contain the book details")
     public void theRetrieveResponseShouldContainBookDetails() {
-
-        Assert.assertNotNull(bookResponse.get().getId(), "Created book should have an ID");
-        Assert.assertEquals(bookResponse.get().getName(), bookBeforeRetrieve.get().getName(), "Actual name: " + bookResponse.get().getName() + ", but expected: " + bookBeforeRetrieve.get().getName());
-        Assert.assertEquals(bookResponse.get().getAuthor(), bookBeforeRetrieve.get().getAuthor(), "Actual author: " + bookResponse.get().getAuthor() + ", but expected: " + bookBeforeRetrieve.get().getAuthor());
-        Assert.assertEquals(bookResponse.get().getPublication(), bookBeforeRetrieve.get().getPublication(), "Actual publication: " + bookResponse.get().getPublication() + ", but expected: " + bookBeforeRetrieve.get().getPublication());
-        Assert.assertEquals(bookResponse.get().getCategory(), bookBeforeRetrieve.get().getCategory(), "Actual category: " + bookResponse.get().getCategory() + ", but expected: " + bookBeforeRetrieve.get().getCategory());
-        Assert.assertEquals(bookResponse.get().getPages(), bookBeforeRetrieve.get().getPages(), "Actual pages count: " + bookResponse.get().getPages() + ", but expected: " + bookBeforeRetrieve.get().getPages());
-        Assert.assertEquals(bookResponse.get().getPrice(), bookBeforeRetrieve.get().getPrice(), "Actual price: " + bookResponse.get().getPrice() + ", but expected: " + bookBeforeRetrieve.get().getPrice());
-
+        BookValidator.validateBookResponseFields(bookResponse.get(), bookBeforeRetrieve.get(), "Retrieved");
     }
 
     @Then("the response should contain the created short book details")
     public void theResponseShouldContainTheCreatedShortBookDetails() {
-
-        Assert.assertNotNull(bookResponse.get().getId(), "Created book should have an ID");
-        Assert.assertEquals(bookResponse.get().getName(), bookRequest.get().getName(), "Actual name: " + bookResponse.get().getName() + ", but expected: " + bookRequest.get().getName());
-        Assert.assertEquals(bookResponse.get().getAuthor(), bookRequest.get().getAuthor(), "Actual author: " + bookResponse.get().getAuthor() + ", but expected: " + bookRequest.get().getAuthor());
-        Assert.assertEquals(bookResponse.get().getPublication(), bookRequest.get().getPublication(), "Actual publication: " + bookResponse.get().getPublication() + ", but expected: " + bookRequest.get().getPublication());
-        Assert.assertEquals(bookResponse.get().getCategory(), bookRequest.get().getCategory(), "Actual category: " + bookResponse.get().getCategory() + ", but expected: " + bookRequest.get().getCategory());
-        Assert.assertEquals(bookResponse.get().getPages(), 0, "Actual pages count: " + bookResponse.get().getPages() + ", but expected 0");
-        Assert.assertEquals(bookResponse.get().getPrice(), 0.0, "Actual price: " + bookResponse.get().getPrice() + ", but expected 0.0");
-
+        BookValidator.validateShortBookFields(bookResponse.get(), bookRequest.get());
     }
 
     @Then("the book should be available when requested by ID")
     public void theBookShouldBeAvailableWhenRequestedById() {
         Response getResponse = bookApiClient.getBookById(bookResponse.get().getId());
-        Assert.assertEquals(getResponse.getStatusCode(), 200);
+        BookValidator.validateResponseStatusCode(
+            getResponse.getStatusCode(),
+            200,
+            String.format("Retrieving book by ID %d", bookResponse.get().getId()),
+            getResponse.getBody().asString()
+        );
+        
         BookResponse retrievedBook = getResponse.as(BookResponse.class);
-        Assert.assertEquals(retrievedBook.getId(), bookResponse.get().getId());
-
+        Assert.assertEquals(retrievedBook.getId(), bookResponse.get().getId(), 
+            String.format("Retrieved book ID mismatch. Expected: %d, Actual: %d", 
+                bookResponse.get().getId(), retrievedBook.getId()));
     }
 
     @When("I update the created book with the following details:")
@@ -405,12 +409,15 @@ public class BookSteps {
         Assert.assertNotNull(updatedId, "No book ID available to verify update");
 
         Response getResponse = bookApiClient.getBookById(updatedId);
-        Assert.assertEquals(getResponse.getStatusCode(), 200);
+        BookValidator.validateResponseStatusCode(
+            getResponse.getStatusCode(),
+            200,
+            "Retrieving updated book",
+            getResponse.getBody().asString()
+        );
 
         BookResponse retrievedBook = getResponse.as(BookResponse.class);
-        Assert.assertEquals(retrievedBook.getName(), updateRequest.get().getName());
-        Assert.assertEquals(retrievedBook.getAuthor(), updateRequest.get().getAuthor());
-        Assert.assertEquals(retrievedBook.getCategory(), updateRequest.get().getCategory());
+        BookValidator.validateBookFields(retrievedBook, updateRequest.get(), "Updated");
     }
 
     @When("I delete the created book")
@@ -440,6 +447,11 @@ public class BookSteps {
         Assert.assertNotNull(deletedId, "No book ID available to verify deletion");
 
         Response getResponse = bookApiClient.getBookById(deletedId);
-        Assert.assertEquals(getResponse.getStatusCode(), 404, "Book with ID " + deletedId + " still exists after deletion");
+        BookValidator.validateResponseStatusCode(
+            getResponse.getStatusCode(),
+            404,
+            String.format("Verifying deletion of book with ID %d", deletedId),
+            getResponse.getBody().asString()
+        );
     }
 }
