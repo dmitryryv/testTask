@@ -38,7 +38,6 @@ public class BookDataFaker {
         return Math.round((random.nextDouble() * 90 + 10) * 100.0) / 100.0;
     }
 
-
     public double getNegativeDoubleNumber() {
         return -19.99;
     }

@@ -18,8 +18,8 @@ import org.testng.Assert;
 import java.util.List;
 import java.util.Map;
 
-import static com.bookapi.api.BookApiClient.BOOKS_ENDPOINT;
-import static com.bookapi.api.BookApiClient.BOOK_BY_ID_ENDPOINT;
+import static com.bookapi.constants.ApiEndpoints.BOOKS;
+import static com.bookapi.constants.ApiEndpoints.BOOK_BY_ID;
 import static io.restassured.RestAssured.given;
 
 
@@ -44,10 +44,10 @@ public class BookSteps {
 
     private void validateBookCreation(Response response) {
         BookValidator.validateResponseStatusCode(
-            response.getStatusCode(), 
-            200, 
-            "Book creation",
-            response.getBody().asString()
+                response.getStatusCode(),
+                200,
+                "Book creation",
+                response.getBody().asString()
         );
     }
 
@@ -55,11 +55,11 @@ public class BookSteps {
         BookResponse createdBook = response.as(BookResponse.class);
         bookResponse.set(createdBook);
         bookIdForTest.set(createdBook.getId());
-        
-        Assert.assertNotNull(bookIdForTest.get(), 
-            String.format("Failed to get ID for the created book. Response body: %s", 
-                response.getBody().asString()));
-                
+
+        Assert.assertNotNull(bookIdForTest.get(),
+                String.format("Failed to get ID for the created book. Response body: %s",
+                        response.getBody().asString()));
+
         TestHooks.getBookIdForCleanUp(bookIdForTest.get());
     }
 
@@ -80,7 +80,6 @@ public class BookSteps {
 
     @Given("I have book details with random valid data")
     public void iHaveBookDetailsWithRandomValidData() {
-
         bookRequest.set(faker.buildDefaultBookRequest());
     }
 
@@ -225,10 +224,10 @@ public class BookSteps {
     @Then("the response status code should be {int}")
     public void theResponseStatusCodeShouldBe(int expectedStatusCode) {
         BookValidator.validateResponseStatusCode(
-            response.get().getStatusCode(),
-            expectedStatusCode,
-            "Operation",
-            response.get().getBody().asString()
+                response.get().getStatusCode(),
+                expectedStatusCode,
+                "Operation",
+                response.get().getBody().asString()
         );
     }
 
@@ -239,8 +238,7 @@ public class BookSteps {
 
     @When("I request all books with incorrect query parameter {string}")
     public void iRequestAllBooksWithIncorrectQueryParameter(String query) {
-        Response response1 = given().get(BOOKS_ENDPOINT + query);
-
+        Response response1 = given().get(BOOKS.getPath() + query);
         response.set(response1);
     }
 
@@ -288,7 +286,7 @@ public class BookSteps {
     public void iRequestTheCreatedBookByInvalidIdFormat(String invalidId) {
         Response response1 = given()
                 .pathParam("id", invalidId)
-                .get(BOOK_BY_ID_ENDPOINT);
+                .get(BOOK_BY_ID.getPath());
 
         response.set(response1);
     }
@@ -323,16 +321,16 @@ public class BookSteps {
     public void theBookShouldBeAvailableWhenRequestedById() {
         Response getResponse = bookApiClient.getBookById(bookResponse.get().getId());
         BookValidator.validateResponseStatusCode(
-            getResponse.getStatusCode(),
-            200,
-            String.format("Retrieving book by ID %d", bookResponse.get().getId()),
-            getResponse.getBody().asString()
+                getResponse.getStatusCode(),
+                200,
+                String.format("Retrieving book by ID %d", bookResponse.get().getId()),
+                getResponse.getBody().asString()
         );
-        
+
         BookResponse retrievedBook = getResponse.as(BookResponse.class);
-        Assert.assertEquals(retrievedBook.getId(), bookResponse.get().getId(), 
-            String.format("Retrieved book ID mismatch. Expected: %d, Actual: %d", 
-                bookResponse.get().getId(), retrievedBook.getId()));
+        Assert.assertEquals(retrievedBook.getId(), bookResponse.get().getId(),
+                String.format("Retrieved book ID mismatch. Expected: %d, Actual: %d",
+                        bookResponse.get().getId(), retrievedBook.getId()));
     }
 
     @When("I update the created book with the following details:")
@@ -398,7 +396,7 @@ public class BookSteps {
         Response response1 = given()
                 .pathParam("id", invalidFormat)
                 .body(updateRequest.get())
-                .put(BOOK_BY_ID_ENDPOINT);
+                .put(BOOK_BY_ID.getPath());
 
         response.set(response1);
     }
@@ -410,10 +408,10 @@ public class BookSteps {
 
         Response getResponse = bookApiClient.getBookById(updatedId);
         BookValidator.validateResponseStatusCode(
-            getResponse.getStatusCode(),
-            200,
-            "Retrieving updated book",
-            getResponse.getBody().asString()
+                getResponse.getStatusCode(),
+                200,
+                "Retrieving updated book",
+                getResponse.getBody().asString()
         );
 
         BookResponse retrievedBook = getResponse.as(BookResponse.class);
@@ -436,7 +434,7 @@ public class BookSteps {
 
     @When("I delete book with invalid id format: {string}")
     public void iDeleteBookWithInvalidIdFormat(String format) {
-        Response response1 = given().pathParam("id", format).delete(BOOK_BY_ID_ENDPOINT);
+        Response response1 = given().pathParam("id", format).delete(BOOK_BY_ID.getPath());
 
         response.set(response1);
     }
@@ -448,10 +446,10 @@ public class BookSteps {
 
         Response getResponse = bookApiClient.getBookById(deletedId);
         BookValidator.validateResponseStatusCode(
-            getResponse.getStatusCode(),
-            404,
-            String.format("Verifying deletion of book with ID %d", deletedId),
-            getResponse.getBody().asString()
+                getResponse.getStatusCode(),
+                404,
+                String.format("Verifying deletion of book with ID %d", deletedId),
+                getResponse.getBody().asString()
         );
     }
 }
